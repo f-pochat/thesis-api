@@ -1,0 +1,46 @@
+services:
+  processor:
+    image: thesis-processor
+    container_name: processor
+    environment:
+      - OLLAMA_HOST=http://localhost:11434/
+      - ENVIRONMENT=production
+    ports:
+      - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+#    networks:
+#      - app-network
+#
+#  ollama:
+#    image: ollama/ollama:latest
+#    container_name: ollama
+#    ports:
+#      - "11434:11434"
+##    networks:
+##      - app-network
+    volumes:
+      - ollama-local:/root/.ollama
+
+  db:
+    image: ankane/pgvector
+    container_name: db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+#    networks:
+#      - app-network
+
+volumes:
+  postgres_data:
+  ollama-local:
+
+networks:
+  app-network:
+    driver: bridge
