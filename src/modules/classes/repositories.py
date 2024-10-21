@@ -1,3 +1,4 @@
+import base64
 from typing import Optional, Dict, Any, List
 
 from src.logger import log
@@ -57,15 +58,15 @@ def save_processed_class(processed_class_data: models.ProcessedClass):
     """
 
     try:
-        embeddings_as_tuple = tuple(processed_class_data.embeddings)
-
+        # Insert into processed_class table
         cursor.execute(insert_query, (
             processed_class_data.class_id,
             processed_class_data.audio_text,
             processed_class_data.summary_text,
-            embeddings_as_tuple
+            processed_class_data.embeddings
         ))
 
+        # Fetch the inserted record
         result = cursor.fetchone()
         conn.commit()
 
@@ -73,13 +74,13 @@ def save_processed_class(processed_class_data: models.ProcessedClass):
         result_dict = {
             "id": result[0],
             "class_id": result[1],
-            "audio_text": result[2],
+            "audio_text": bytes(result[2]).decode('utf-8'),
             "summary_text": result[3]
         }
 
         # Update the status to 'completed'
         update_status_query = """
-            UPDATE classes
+            UPDATE class
             SET status = 'completed'
             WHERE id = %s
         """
@@ -87,26 +88,32 @@ def save_processed_class(processed_class_data: models.ProcessedClass):
         conn.commit()
 
         # Return the saved object as a ClassData instance
-        return models.ClassData.parse_obj(result_dict)
+        return models.ProcessedClass.parse_obj(result_dict)
 
     except Exception as e:
-        # If there was an error, update the status to 'failed'
-        update_status_query = """
-            UPDATE classes
-            SET status = 'failed'
-            WHERE id = %s
-        """
-        cursor.execute(update_status_query, (processed_class_data.class_id,))
-        conn.commit()
+        # Rollback the transaction on error
+        conn.rollback()
 
-        # Optionally log the error
-        print(f"Error occurred: {str(e)}")
+        # If there was an error, update the status to 'failed'
+        try:
+            update_status_query = """
+                UPDATE class
+                SET status = 'failed'
+                WHERE id = %s
+            """
+            cursor.execute(update_status_query, (processed_class_data.class_id,))
+            conn.commit()
+        except Exception as update_error:
+            # Log the error in updating the status
+            log.error(f"Error updating status to failed: {str(update_error)}")
+
+        # Log the original error
+        log.error(f"Error occurred: {str(e)}")
 
         # Optionally, re-raise the error or return None
         raise
 
     finally:
-        # Ensure the connection is closed
         cursor.close()
         conn.close()
 

@@ -20,6 +20,11 @@ help:
 migrate:
 	$(ALEMBIC) upgrade head
 
+# Down database tables
+.PHONY: down
+down:
+	$(ALEMBIC) downgrade
+
 # Run the FastAPI server
 .PHONY: run
 run:

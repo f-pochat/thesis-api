@@ -31,7 +31,7 @@ def process_audio_file(audio_url: str, class_id: str):
             class_id=class_id,
             audio_text=res[0],
             summary_text=res[1],
-            embeddings=res[2]
+            embeddings=res[2]['embedding'],
         )
         processed_class.class_id = class_id
 

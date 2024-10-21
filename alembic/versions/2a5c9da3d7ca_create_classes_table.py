@@ -16,13 +16,14 @@ from sqlalchemy.sql.type_api import UserDefinedType
 # Define the custom Vector type here or import it if defined elsewhere
 class Vector(UserDefinedType):
     def get_col_spec(self):
-        return "VECTOR(1536)"  # Specify the dimension of your vector
+        return "VECTOR(2048)"  # Specify the dimension of your vector
 
     def bind_processor(self, dialect):
         def process(value):
             if value is None:
                 return None
             return value
+
         return process
 
     def result_processor(self, dialect, coltype):
@@ -30,7 +31,9 @@ class Vector(UserDefinedType):
             if value is None:
                 return None
             return value
+
         return process
+
 
 # revision identifiers, used by Alembic.
 revision: str = '2a5c9da3d7ca'
