@@ -7,3 +7,7 @@ boto3
 fastapi
 botocore
 SQLAlchemy
+ollama
+nltk
+scikit-learn
+numpy

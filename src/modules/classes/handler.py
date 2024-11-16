@@ -6,7 +6,6 @@ from src.modules.classes.services import get_presigned_url, process_audio_file
 
 router = APIRouter()
 
-
 @router.post("/")
 async def save_class(request: Request, background_tasks: BackgroundTasks):
     body = await request.json()

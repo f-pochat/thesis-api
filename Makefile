@@ -28,7 +28,7 @@ down:
 # Run the FastAPI server
 .PHONY: run
 run:
-	$(UVICORN) $(APP) --host 0.0.0.0 --port 8080 --reload
+	$(UVICORN) $(APP) --host 0.0.0.0 --port 8080 --reload --log-level debug
 
 # Clean up __pycache__ directories
 .PHONY: clean
