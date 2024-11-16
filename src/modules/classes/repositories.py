@@ -180,7 +180,7 @@ def get_full_class_data(class_id: str) -> Optional[Dict[str, Any]]:
         conn.close()
 
 
-def get_classes(class_id: str) -> Optional[List[models.ClassData]]:
+def get_classes() -> Optional[List[models.ClassData]]:
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -197,7 +197,7 @@ def get_classes(class_id: str) -> Optional[List[models.ClassData]]:
 
     try:
         # Execute the query
-        cursor.execute(query, (class_id,))
+        cursor.execute(query)
         results = cursor.fetchall()
 
         # Map the results to a list of ClassData objects

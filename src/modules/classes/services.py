@@ -66,6 +66,7 @@ def get_presigned_url(file_name: str, file_type: str) -> str:
 
 def get_class(class_id: str):
     return repositories.get_full_class_data(class_id)
-#
-# def get_classses():
-#     return repositories.get_classes()
+
+
+def get_classes():
+    return repositories.get_classes()

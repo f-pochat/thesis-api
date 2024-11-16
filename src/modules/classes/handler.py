@@ -45,12 +45,12 @@ async def get_class(class_id: str):
         "body": json.dumps(class_data, default=str)
     }
 
-#
-# # GetClasses
-# @router.get("/")
-# async def get_classes():
-#     classes = services.get_classes()
-#     return {
-#         "statusCode": 200,
-#         "body": json.dumps(classes, default=str)
-#     }
+
+# GetClasses
+@router.get("/all")
+async def get_classes():
+    classes = services.get_classes()
+    return {
+        "statusCode": 200,
+        "body": json.dumps(classes, default=str)
+    }
