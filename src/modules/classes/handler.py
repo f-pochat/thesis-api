@@ -1,4 +1,6 @@
 import json
+
+from src.logger import log
 from src.modules.classes import services, models
 from fastapi import Request, APIRouter, BackgroundTasks
 
@@ -39,10 +41,13 @@ async def get_presigned(file_name: str, file_type: str):
 # GetClass
 @router.get("/")
 async def get_class(class_id: str):
-    class_data = services.get_class(class_id)
+    class_data, processed_class_data = services.get_class(class_id)
     return {
         "statusCode": 200,
-        "body": json.dumps(class_data, default=str)
+        "body": {
+            "class": class_data,
+            "processed_class": processed_class_data
+        }
     }
 
 
@@ -52,5 +57,5 @@ async def get_classes():
     classes = services.get_classes()
     return {
         "statusCode": 200,
-        "body": json.dumps(classes, default=str)
+        "body": classes
     }

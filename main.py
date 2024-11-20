@@ -7,6 +7,7 @@ from src.middlewares.errors import exception_middleware
 from src.middlewares.log import request_log_middleware
 from src.modules.classes import handler as class_handler
 from src.modules.chat import handler as chat_handler
+from fastapi.middleware.cors import CORSMiddleware
 import nltk
 
 try:
@@ -21,6 +22,15 @@ nltk.download('punkt_tab')
 logger.init_loggers()
 
 app = FastAPI()
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Register Middleware
 app.middleware("http")(exception_middleware)

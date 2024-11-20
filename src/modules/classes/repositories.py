@@ -138,7 +138,7 @@ def failed_processing_class(class_id: str):
         conn.close()
 
 
-def get_full_class_data(class_id: str) -> Optional[Dict[str, Any]]:
+def get_full_class_data(class_id: str) -> (Optional[models.ClassData], Optional[models.ProcessedClass]):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -152,7 +152,7 @@ def get_full_class_data(class_id: str) -> Optional[Dict[str, Any]]:
             p.audio_text,
             p.summary_text
         FROM 
-            classes c
+            class c
         LEFT JOIN 
             processed_class p ON c.id = p.class_id
         WHERE 
@@ -163,12 +163,20 @@ def get_full_class_data(class_id: str) -> Optional[Dict[str, Any]]:
         # Execute the query
         cursor.execute(query, (class_id,))
         result = cursor.fetchone()
-
-        # Check if a result was returned
         if result:
-            # Map the result to a dictionary
-            keys = ['class_id', 'date', 'classroom', 'audio', 'audio_text', 'summary_text']
-            return dict(zip(keys, result))
+            class_data = models.ClassData(
+                id=result[0],  # class_id
+                date=datetime.strptime(result[1], '%Y-%m-%d %H:%M:%S+00'),
+                classroom=result[2],
+                audio=result[3],
+                summary_text=result[5]
+            )
+            processed_class_data = models.ProcessedClass(
+                class_id=result[0],
+                audio_text=result[4].tobytes().decode('utf-8'),
+                summary_text=result[5],
+            )
+            return class_data, processed_class_data
         else:
             return None  # No class found with that ID
 
@@ -191,8 +199,9 @@ def get_classes() -> Optional[List[models.ClassData]]:
             c.date,
             c.classroom,
             c.audio,
+            c.status
         FROM 
-            classes c
+            class c
     """
 
     try:
@@ -205,9 +214,10 @@ def get_classes() -> Optional[List[models.ClassData]]:
         for row in results:
             class_data = models.ClassData(
                 id=row[0],  # class_id
-                date=row[1],
+                date=datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S+00'),
                 classroom=row[2],
-                audio=row[3]
+                audio=row[3],
+                status=row[4]
             )
             class_data_list.append(class_data)
 
