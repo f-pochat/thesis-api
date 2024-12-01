@@ -18,8 +18,9 @@ async def chat(request: Request, class_id: str):
         }
 
     prompt = body["prompt"]
+    history = body["history"]
 
-    res = services.chat(prompt, class_id)
+    res = services.chat(history, prompt, class_id)
 
     return {
         "statusCode": 200,

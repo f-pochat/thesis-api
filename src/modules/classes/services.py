@@ -5,7 +5,7 @@ from src.modules.classes import repositories
 import requests
 import boto3
 
-from src.modules.classes.models import ClassData, ProcessedClass
+from src.modules.classes.models import ClassData, ProcessedClass, Embeddings
 
 s3_client = boto3.client('s3')
 bucket_name = "thesis-classes"
@@ -31,11 +31,20 @@ def process_audio_file(audio_url: str, class_id: str):
             class_id=class_id,
             audio_text=res[0],
             summary_text=res[1],
-            embeddings=res[2]['embedding'],
         )
+
+        contents = []
+        for content in res[2]:
+            contents.append(Embeddings(
+                class_id=class_id,
+                content=content[0],
+                embedding=content[1],
+            ))
+
         processed_class.class_id = class_id
 
         repositories.save_processed_class(processed_class)
+        repositories.save_embeddings(contents)
 
         if response.status_code != 200:
             repositories.failed_processing_class(class_id)

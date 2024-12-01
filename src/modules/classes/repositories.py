@@ -52,8 +52,8 @@ def save_processed_class(processed_class_data: models.ProcessedClass):
 
     # Define the insert query for processed_class
     insert_query = """
-        INSERT INTO processed_class (class_id, audio_text, summary_text, embeddings)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO processed_class (class_id, audio_text, summary_text)
+        VALUES (%s, %s, %s)
         RETURNING id, class_id, audio_text, summary_text
     """
 
@@ -63,7 +63,6 @@ def save_processed_class(processed_class_data: models.ProcessedClass):
             processed_class_data.class_id,
             processed_class_data.audio_text,
             processed_class_data.summary_text,
-            processed_class_data.embeddings
         ))
 
         # Fetch the inserted record
@@ -226,6 +225,68 @@ def get_classes() -> Optional[List[models.ClassData]]:
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def save_embeddings(embeddings: list[models.Embeddings]):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Define the insert query for processed_class
+    insert_query = """
+        INSERT INTO embeddings (class_id, content, embedding)
+        VALUES (%s, %s, %s)
+        RETURNING id, class_id, content, embedding
+    """
+
+    try:
+        results = []
+        for embedding in embeddings:
+            # Insert into embeddings table
+            cursor.execute(insert_query, (
+                embedding.class_id,
+                embedding.content,
+                embedding.embedding,
+            ))
+            result = cursor.fetchone()
+            # Create a result dictionary
+            result_dict = {
+                "id": result[0],
+                "class_id": result[1],
+                "content": bytes(result[2]).decode('utf-8'),
+                "embedding": result[3]
+            }
+            results.append(result_dict)
+
+        conn.commit()
+
+        return results
+
+    except Exception as e:
+        # Rollback the transaction on error
+        conn.rollback()
+
+        # If there was an error, update the status to 'failed'
+        try:
+            update_status_query = """
+                UPDATE class
+                SET status = 'failed'
+                WHERE id = %s
+            """
+            cursor.execute(update_status_query, (embeddings[0].class_id,))
+            conn.commit()
+        except Exception as update_error:
+            # Log the error in updating the status
+            log.error(f"Error updating status to failed: {str(update_error)}")
+
+        # Log the original error
+        log.error(f"Error occurred: {str(e)}")
+
+        # Optionally, re-raise the error or return None
+        raise
+
     finally:
         cursor.close()
         conn.close()

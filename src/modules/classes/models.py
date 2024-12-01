@@ -16,4 +16,10 @@ class ProcessedClass(BaseModel):
     class_id: str = Field(None, description="Class id")
     audio_text: str = Field(None, description="Audio text")
     summary_text: str = Field(None, description="Summary text")
-    embeddings: List[float] = Field(None, description="Ollama Embeddings")
+
+
+class Embeddings(BaseModel):
+    id: Optional[str] = Field(None, description="Embedding id")
+    class_id: str = Field(None, description="Class id")
+    content: str = Field(None, description="Chunk")
+    embedding: List[float] = Field(None, description="Ollama Embeddings")

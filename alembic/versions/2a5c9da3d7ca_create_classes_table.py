@@ -64,7 +64,15 @@ def upgrade():
                   nullable=False),
         sa.Column('audio_text', sa.LargeBinary, nullable=True),
         sa.Column('summary_text', sa.Text, nullable=True),
-        sa.Column('embeddings', Vector(), nullable=True)
+    )
+
+    op.create_table(
+        'embeddings',
+        sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text('uuid_generate_v4()')),
+        sa.Column('class_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('class.id', ondelete="CASCADE"),
+                  nullable=False),
+        sa.Column('content', sa.LargeBinary, nullable=False),
+        sa.Column('embedding', Vector(), nullable=False),
     )
 
 
